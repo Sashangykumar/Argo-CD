@@ -16,5 +16,10 @@ kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 4. access the default password to log in to argocd ui
 ```
+linux:
 kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d; echo
+
+windows:
+kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" |
+ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }
 ```
