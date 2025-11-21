@@ -34,11 +34,11 @@ jobs:
 
     - name: Install backend dependencies
       run: |
-        pip install -r app/requirements.txt
+        pip install -r guestbook/requirements.txt
         pip install pytest pytest-cov
 
     - name: Run backend tests (ignore failures)
-      run: pytest --cov=app --cov-report=term-missing app/
+      run: pytest --cov=guestbook --cov-report=term-missing guestbook/
       continue-on-error: true
 
     - name: Log in to Docker Hub
@@ -54,7 +54,7 @@ jobs:
         echo "IMAGE_FULL=${IMAGE_FULL}" >> $GITHUB_ENV
 
         # Build and push
-        docker build -t ${IMAGE_FULL} ./app
+        docker build -t ${IMAGE_FULL} ./guestbook
         docker push ${IMAGE_FULL}
 
     # Install yq so we can edit yaml in-place
