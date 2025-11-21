@@ -10,9 +10,7 @@
 ```
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.0/deploy/static/provider/aws/deploy.yaml
 ```
-2. Create a repositry name argo-rollout-guestbook-blue-green and clone it into local
-
-3. Create a file name guestbook-rollout.yaml with ** guestbook-rollout folder ** with the below code
+2. Create a file name k8s-manifests\guestbook-rollout.yaml with  the below code
 
 ```
 apiVersion: argoproj.io/v1alpha1
@@ -47,7 +45,8 @@ spec:
     blueGreen:
       activeService: guestbook-ui
       previewService: guestbook-ui-canary
-      autoPromotionEnabled: false
+      autoPromotionEnabled: true
+      autoPromotionSeconds: 120
       scaleDownDelaySeconds: 300
 ---
 apiVersion: v1
@@ -101,7 +100,6 @@ spec:
 
 ```
 ---
-# 5) (Optional) Argo CD Application - points to /k8s-manifests in your repo
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
