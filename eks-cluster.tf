@@ -1,27 +1,44 @@
-# Configure the AWS provider
+# ================================
+# AWS Provider
+# ================================
 provider "aws" {
   region = "us-east-1"
 }
 
-# Data source to fetch the default VPC
+# ================================
+# Default VPC
+# ================================
 data "aws_vpc" "default" {
   default = true
 }
 
-# Data source to fetch subnets in specific availability zones (us-east-1a and us-east-1b)
+# ================================
+# Fetch ALL subnets in Default VPC
+# ================================
 data "aws_subnets" "default" {
   filter {
     name   = "vpc-id"
     values = [data.aws_vpc.default.id]
   }
+}
 
-  filter {
-    name   = "availability-zone"
-    values = ["us-east-1a", "us-east-1b"]
+# Fetch detailed info of each subnet
+data "aws_subnet" "selected" {
+  for_each = toset(data.aws_subnets.default.ids)
+  id       = each.value
+}
+
+# Create map of subnet per AZ (ensures unique AZ usage)
+locals {
+  unique_az_subnets = {
+    for id, subnet in data.aws_subnet.selected :
+    subnet.availability_zone => subnet.id
   }
 }
 
-# Create IAM role for EKS cluster
+# ================================
+# IAM Role for EKS Cluster
+# ================================
 resource "aws_iam_role" "eks_cluster_role" {
   name = "eks-cluster-role"
 
@@ -39,28 +56,30 @@ resource "aws_iam_role" "eks_cluster_role" {
   })
 }
 
-# Attach the AmazonEKSClusterPolicy to the EKS cluster role
 resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
   role       = aws_iam_role.eks_cluster_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
 
-# Create the EKS cluster
+# ================================
+# EKS Cluster
+# ================================
 resource "aws_eks_cluster" "example" {
   name     = "argocd-cluster"
   role_arn = aws_iam_role.eks_cluster_role.arn
 
   vpc_config {
-    subnet_ids = data.aws_subnets.default.ids
+    subnet_ids = values(local.unique_az_subnets)
   }
 
-  # Ensure that IAM role permissions are created before and deleted after EKS cluster handling
   depends_on = [
     aws_iam_role_policy_attachment.eks_cluster_policy
   ]
 }
 
-# Create IAM role for EKS node group
+# ================================
+# IAM Role for Node Group
+# ================================
 resource "aws_iam_role" "eks_node_group_role" {
   name = "eks-node-group-role"
 
@@ -78,28 +97,30 @@ resource "aws_iam_role" "eks_node_group_role" {
   })
 }
 
-# Attach policies to the node group role
 resource "aws_iam_role_policy_attachment" "eks_worker_node_policy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
   role       = aws_iam_role.eks_node_group_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
 }
 
 resource "aws_iam_role_policy_attachment" "eks_cni_policy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
   role       = aws_iam_role.eks_node_group_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
 
 resource "aws_iam_role_policy_attachment" "ec2_container_registry_readonly" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   role       = aws_iam_role.eks_node_group_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
-# Create EKS node group
+# ================================
+# EKS Node Group
+# ================================
 resource "aws_eks_node_group" "example" {
   cluster_name    = aws_eks_cluster.example.name
   node_group_name = "sample-node-group"
   node_role_arn   = aws_iam_role.eks_node_group_role.arn
-  subnet_ids      = data.aws_subnets.default.ids
+
+  subnet_ids = values(local.unique_az_subnets)
 
   scaling_config {
     desired_size = 2
@@ -116,12 +137,13 @@ resource "aws_eks_node_group" "example" {
   ]
 }
 
-# Output the EKS cluster endpoint
+# ================================
+# Outputs
+# ================================
 output "cluster_endpoint" {
   value = aws_eks_cluster.example.endpoint
 }
 
-# Output the cluster name
 output "cluster_name" {
   value = aws_eks_cluster.example.name
 }
