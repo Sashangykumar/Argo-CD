@@ -16,7 +16,7 @@ jobs:
       IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/guestbook
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-      COMMIT_EMAIL: "github-actions@example.com"
+      COMMIT_EMAIL: "sashangykumar1628@gmail.com"
       COMMIT_NAME: "GitHub Actions"
       MANIFEST_PATH: "k8s-manifests/guestbook-rollout.yaml"
 
