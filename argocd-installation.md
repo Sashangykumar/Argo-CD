@@ -23,3 +23,4 @@ windows:
 kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" |
 ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }
 ```
+vIo0qE-30IqNPMp1
