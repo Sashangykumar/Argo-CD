@@ -1,4 +1,4 @@
-# Create EKS cluster
+# Create EKS clusters
 
 
 ## Prequisite Install terraform 
