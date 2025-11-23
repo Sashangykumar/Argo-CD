@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: guestbook-ui
-          image: udemykcloud534/guestbook:20251122-143951-5f388c7
+          image: skm1628/guestbook:20251123-152740-bb68ad7
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -51,7 +51,7 @@ spec:
   template:
     spec:
       containers:
-        - image: udemykcloud534/guestbook:20251122-143951-5f388c7
+        - image: skm1628/guestbook:20251123-152740-bb68ad7
 ---
 # 3) Green Service (Preview)
 apiVersion: v1
@@ -68,7 +68,7 @@ spec:
   template:
     spec:
       containers:
-        - image: udemykcloud534/guestbook:green
+        - image: skm1628/guestbook:20251123-152740-bb68ad7
 ---
 # 4) Ingress for Blue (/) and Green (/preview)
 apiVersion: networking.k8s.io/v1
@@ -103,4 +103,4 @@ spec:
   template:
     spec:
       containers:
-        - image: udemykcloud534/guestbook:20251122-143951-5f388c7
+        - image: skm1628/guestbook:20251123-152740-bb68ad7
